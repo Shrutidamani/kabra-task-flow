@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import { Button } from "./ui/button";
+import { registerServiceWorker } from "@/lib/pwa";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
