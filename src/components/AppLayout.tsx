@@ -65,7 +65,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               )}
             >
-              <Icon className="size-4.5" />
+              <Icon className="size-[18px]" />
               {label}
             </Link>
           );
@@ -89,7 +89,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
             title="Sign out"
           >
-            <LogOut className="size-4.5" />
+            <LogOut className="size-[18px]" />
           </button>
         </div>
       </div>
