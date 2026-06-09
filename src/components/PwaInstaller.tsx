@@ -13,6 +13,7 @@ export function PwaInstaller() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    registerServiceWorker();
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
