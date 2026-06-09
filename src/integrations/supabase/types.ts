@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          marked_by: string | null
+          note: string | null
+          status: Database["public"]["Enums"]["attendance_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          marked_by?: string | null
+          note?: string | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          marked_by?: string | null
+          note?: string | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          read: boolean
+          task_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          task_id?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          task_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -32,6 +98,33 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -135,6 +228,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "partner" | "manager" | "article" | "intern"
+      attendance_status: "present" | "absent" | "half_day" | "leave"
       task_priority: "low" | "medium" | "high"
       task_status: "pending" | "in_progress" | "completed"
     }
@@ -265,6 +359,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "partner", "manager", "article", "intern"],
+      attendance_status: ["present", "absent", "half_day", "leave"],
       task_priority: ["low", "medium", "high"],
       task_status: ["pending", "in_progress", "completed"],
     },
