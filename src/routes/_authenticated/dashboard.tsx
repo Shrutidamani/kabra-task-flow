@@ -7,22 +7,11 @@ import {
   AlertTriangle,
   TrendingUp,
 } from "lucide-react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
 import { useTasks, useMembers } from "@/lib/queries";
 import { isOverdue, STATUS_LABELS, PRIORITY_LABELS, type Task } from "@/lib/tasks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
+import { BarList, ChartEmpty, DonutChart, GroupedBarList } from "@/components/SimpleCharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — K K Kabra & Co" }] }),
@@ -123,16 +112,9 @@ function Dashboard() {
           <CardHeader><CardTitle className="text-base">Tasks by Status</CardTitle></CardHeader>
           <CardContent>
             {stats.total === 0 ? (
-              <Empty />
+              <ChartEmpty />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie data={statusData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={3}>
-                    {statusData.map((_, i) => <Cell key={i} fill={STAT_COLORS[i % STAT_COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <DonutChart data={statusData} colors={STAT_COLORS} />
             )}
             <Legend items={statusData} />
           </CardContent>
@@ -142,17 +124,9 @@ function Dashboard() {
           <CardHeader><CardTitle className="text-base">Tasks by Priority</CardTitle></CardHeader>
           <CardContent>
             {stats.total === 0 ? (
-              <Empty />
+              <ChartEmpty />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={priorityData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
-                  <Tooltip cursor={{ fill: "var(--color-muted)" }} />
-                  <Bar dataKey="value" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <BarList data={priorityData} />
             )}
           </CardContent>
         </Card>
@@ -166,31 +140,14 @@ function Dashboard() {
         </CardHeader>
         <CardContent>
           {memberData.length === 0 ? (
-            <Empty />
+            <ChartEmpty />
           ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={memberData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
-                <Tooltip cursor={{ fill: "var(--color-muted)" }} />
-                <Bar dataKey="assigned" name="Assigned" fill="var(--color-chart-1)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="completed" name="Completed" fill="var(--color-chart-3)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <GroupedBarList data={memberData} />
           )}
         </CardContent>
       </Card>
 
       {isLoading && <p className="text-center text-sm text-muted-foreground">Loading…</p>}
-    </div>
-  );
-}
-
-function Empty() {
-  return (
-    <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-      No data yet
     </div>
   );
 }

@@ -1,23 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
 import { useTasks, useMembers } from "@/lib/queries";
 import { isOverdue, STATUS_LABELS, PRIORITY_LABELS, daysUntil, type Task } from "@/lib/tasks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { BarList, DonutChart } from "@/components/SimpleCharts";
 
 export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({ meta: [{ title: "Reports & Analytics — K K Kabra & Co" }] }),
@@ -86,42 +74,20 @@ function ReportsPage() {
         <Card>
           <CardHeader><CardTitle className="text-base">By Status</CardTitle></CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={230}>
-              <PieChart>
-                <Pie data={byStatus} dataKey="value" nameKey="name" outerRadius={80} label>
-                  {byStatus.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
-                </Pie>
-                <Tooltip /><Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            <DonutChart data={byStatus} colors={COLORS} />
+            <ChartLegend items={byStatus} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-base">By Priority</CardTitle></CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={230}>
-              <BarChart data={byPriority}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
-                <Tooltip cursor={{ fill: "var(--color-muted)" }} />
-                <Bar dataKey="value" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <BarList data={byPriority} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-base">By Due Date (open)</CardTitle></CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={230}>
-              <BarChart data={byDue} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border)" />
-                <XAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
-                <YAxis type="category" dataKey="name" width={90} tickLine={false} axisLine={false} fontSize={11} />
-                <Tooltip cursor={{ fill: "var(--color-muted)" }} />
-                <Bar dataKey="value" fill="var(--color-chart-4)" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <BarList data={byDue} color="var(--color-chart-4)" />
           </CardContent>
         </Card>
       </div>
@@ -145,6 +111,19 @@ function ReportsPage() {
           ))}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function ChartLegend({ items }: { items: { name: string; value: number }[] }) {
+  return (
+    <div className="mt-2 flex flex-wrap justify-center gap-3">
+      {items.map((item, index) => (
+        <span key={item.name} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="size-2.5 rounded-full" style={{ background: COLORS[index % COLORS.length] }} />
+          {item.name} ({item.value})
+        </span>
+      ))}
     </div>
   );
 }
