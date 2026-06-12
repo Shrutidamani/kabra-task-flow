@@ -47,16 +47,16 @@ function TeamPage() {
   const remove = useServerFn(deleteTeamMember);
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<AppRole>("article");
 
   const createMutation = useMutation({
-    mutationFn: () => create({ data: { name: name.trim(), email: email.trim(), password, role } }),
+    mutationFn: () => create({ data: { name: name.trim(), username: username.trim(), password, role } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["members"] });
       toast.success("Team member added");
-      setName(""); setEmail(""); setPassword(""); setRole("article");
+      setName(""); setUsername(""); setPassword(""); setRole("article");
       setOpen(false);
     },
     onError: (e: Error) => toast.error(e.message),
