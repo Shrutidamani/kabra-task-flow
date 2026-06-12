@@ -54,7 +54,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {NAV.map(({ to, label, icon: Icon }) => {
+        {NAV.filter((n) => !n.adminOnly || isAdmin).map(({ to, label, icon: Icon }) => {
           const active = pathname === to;
           return (
             <Link
