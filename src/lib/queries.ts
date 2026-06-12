@@ -2,6 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Task } from "@/lib/tasks";
 import type { AppRole } from "@/lib/auth";
+import type { AttendanceRecord } from "@/lib/payroll";
+
+export interface NotificationRow {
+  id: string;
+  title: string;
+  body: string | null;
+  task_id: string | null;
+  type: string;
+  read: boolean;
+  created_at: string;
+}
 
 export interface Member {
   id: string;
