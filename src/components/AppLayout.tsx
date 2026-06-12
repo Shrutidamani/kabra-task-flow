@@ -5,6 +5,7 @@ import {
   ListChecks,
   Users,
   BarChart3,
+  Wallet,
   LogOut,
   Menu,
   X,
@@ -13,12 +14,14 @@ import {
 import { useAuth, ROLE_LABELS } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { AttendancePrompt } from "@/components/AttendancePrompt";
 
 const NAV = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/tasks", label: "Task Management", icon: ListChecks },
-  { to: "/team", label: "Team Members", icon: Users },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
+  { to: "/tasks", label: "Task Management", icon: ListChecks, adminOnly: false },
+  { to: "/team", label: "Team Members", icon: Users, adminOnly: false },
+  { to: "/payroll", label: "Attendance & Salary", icon: Wallet, adminOnly: true },
+  { to: "/reports", label: "Reports", icon: BarChart3, adminOnly: false },
 ] as const;
 
 export function AppLayout({ children }: { children: ReactNode }) {
