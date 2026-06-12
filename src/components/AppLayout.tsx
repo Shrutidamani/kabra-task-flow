@@ -5,6 +5,7 @@ import {
   ListChecks,
   Users,
   BarChart3,
+  Wallet,
   LogOut,
   Menu,
   X,
@@ -13,16 +14,18 @@ import {
 import { useAuth, ROLE_LABELS } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { AttendancePrompt } from "@/components/AttendancePrompt";
 
 const NAV = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/tasks", label: "Task Management", icon: ListChecks },
-  { to: "/team", label: "Team Members", icon: Users },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
+  { to: "/tasks", label: "Task Management", icon: ListChecks, adminOnly: false },
+  { to: "/team", label: "Team Members", icon: Users, adminOnly: false },
+  { to: "/payroll", label: "Attendance & Salary", icon: Wallet, adminOnly: true },
+  { to: "/reports", label: "Reports", icon: BarChart3, adminOnly: false },
 ] as const;
 
 export function AppLayout({ children }: { children: ReactNode }) {
-  const { profile, roles, signOut } = useAuth();
+  const { profile, roles, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
@@ -51,7 +54,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {NAV.map(({ to, label, icon: Icon }) => {
+        {NAV.filter((n) => !n.adminOnly || isAdmin).map(({ to, label, icon: Icon }) => {
           const active = pathname === to;
           return (
             <Link
@@ -98,6 +101,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
+      {/* Daily attendance pop-up for admins */}
+      <AttendancePrompt />
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 bg-sidebar md:block">{SidebarInner}</aside>
 

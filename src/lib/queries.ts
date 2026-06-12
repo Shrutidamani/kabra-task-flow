@@ -2,6 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Task } from "@/lib/tasks";
 import type { AppRole } from "@/lib/auth";
+import type { AttendanceRecord } from "@/lib/payroll";
+
+export interface NotificationRow {
+  id: string;
+  title: string;
+  body: string | null;
+  task_id: string | null;
+  type: string;
+  read: boolean;
+  created_at: string;
+}
 
 export interface Member {
   id: string;
@@ -59,3 +70,70 @@ export function useTemplates() {
     },
   });
 }
+
+export function useFirmSettings() {
+  return useQuery({
+    queryKey: ["firm_settings"],
+    queryFn: async (): Promise<{ allowed_holidays: number }> => {
+      const { data, error } = await supabase
+        .from("firm_settings")
+        .select("allowed_holidays")
+        .eq("id", true)
+        .maybeSingle();
+      if (error) throw error;
+      return { allowed_holidays: data?.allowed_holidays ?? 2 };
+    },
+  });
+}
+
+export function useAttendanceMonth(month: string) {
+  return useQuery({
+    queryKey: ["attendance", month],
+    queryFn: async (): Promise<AttendanceRecord[]> => {
+      const start = `${month}-01`;
+      const [y, m] = month.split("-").map(Number);
+      const endDate = new Date(y, m, 1).toISOString().slice(0, 10); // first day of next month
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("id, user_id, date, status, note")
+        .gte("date", start)
+        .lt("date", endDate);
+      if (error) throw error;
+      return (data ?? []) as AttendanceRecord[];
+    },
+  });
+}
+
+export function useSalaries() {
+  return useQuery({
+    queryKey: ["salaries"],
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from("salary_config")
+        .select("user_id, monthly_salary");
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      for (const r of (data ?? []) as { user_id: string; monthly_salary: number }[]) {
+        map[r.user_id] = Number(r.monthly_salary);
+      }
+      return map;
+    },
+  });
+}
+
+export function useNotifications(enabled: boolean) {
+  return useQuery({
+    queryKey: ["notifications"],
+    enabled,
+    queryFn: async (): Promise<NotificationRow[]> => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("id, title, body, task_id, type, read, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as NotificationRow[];
+    },
+  });
+}
+
