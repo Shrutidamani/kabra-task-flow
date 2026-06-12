@@ -104,8 +104,9 @@ function TeamPage() {
               <div className="space-y-4">
                 <div className="space-y-2"><Label>Name</Label>
                   <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" /></div>
-                <div className="space-y-2"><Label>Email ID</Label>
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="member@kabraco.in" /></div>
+                <div className="space-y-2"><Label>Username</Label>
+                  <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. ramesh.k" autoCapitalize="none" />
+                  <p className="text-xs text-muted-foreground">Staff sign in with this username and password — no email needed.</p></div>
                 <div className="space-y-2"><Label>Temporary Password</Label>
                   <Input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" /></div>
                 <div className="space-y-2"><Label>Role</Label>
