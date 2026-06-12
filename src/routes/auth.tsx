@@ -32,8 +32,11 @@ function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const id = loginEmail.trim();
+    // Staff log in with a username; admins/partners may use their email.
+    const email = id.includes("@") ? id : `${id.toLowerCase()}@staff.kkkabra.local`;
     const { error } = await supabase.auth.signInWithPassword({
-      email: loginEmail.trim(),
+      email,
       password: loginPassword,
     });
     setLoading(false);
