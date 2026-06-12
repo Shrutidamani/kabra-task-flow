@@ -20,7 +20,12 @@ export const createTeamMember = createServerFn({ method: "POST" })
     z
       .object({
         name: z.string().trim().min(1).max(120),
-        email: z.string().trim().email().max(255),
+        username: z
+          .string()
+          .trim()
+          .min(3)
+          .max(60)
+          .regex(/^[a-zA-Z0-9._-]+$/, "Use only letters, numbers, dots, _ or -"),
         password: z.string().min(6).max(128),
         role: z.enum(ROLES),
       })
@@ -30,11 +35,15 @@ export const createTeamMember = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // Staff have no real email, so we derive a stable internal login email
+    // from the username. Staff sign in with just their username.
+    const email = `${data.username.toLowerCase()}@staff.kkkabra.local`;
+
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
+      email,
       password: data.password,
       email_confirm: true,
-      user_metadata: { name: data.name, role: data.role },
+      user_metadata: { name: data.name, username: data.username.toLowerCase(), role: data.role },
     });
     if (error) throw new Error(error.message);
     return { id: created.user?.id };
