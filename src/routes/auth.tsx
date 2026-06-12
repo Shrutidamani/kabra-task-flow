@@ -32,8 +32,11 @@ function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const id = loginEmail.trim();
+    // Staff log in with a username; admins/partners may use their email.
+    const email = id.includes("@") ? id : `${id.toLowerCase()}@staff.kkkabra.local`;
     const { error } = await supabase.auth.signInWithPassword({
-      email: loginEmail.trim(),
+      email,
       password: loginPassword,
     });
     setLoading(false);
@@ -108,9 +111,9 @@ function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="mt-6 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="le">Email ID</Label>
-                  <Input id="le" type="email" required value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)} placeholder="you@kabraco.in" />
+                  <Label htmlFor="le">Username or Email</Label>
+                  <Input id="le" type="text" required value={loginEmail} autoCapitalize="none"
+                    onChange={(e) => setLoginEmail(e.target.value)} placeholder="username or you@kabraco.in" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lp">Password</Label>
