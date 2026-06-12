@@ -101,6 +101,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
+      {/* Daily attendance pop-up for admins */}
+      <AttendancePrompt />
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 bg-sidebar md:block">{SidebarInner}</aside>
 
