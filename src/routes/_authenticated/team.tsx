@@ -147,7 +147,9 @@ function TeamPage() {
                         {m.name || "Unnamed"}
                         {m.roles.includes("admin") && <ShieldCheck className="size-4 text-accent" />}
                       </p>
-                      <p className="truncate text-sm text-muted-foreground">{m.email}</p>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {m.email.endsWith("@staff.kkkabra.local") ? m.email.split("@")[0] : m.email}
+                      </p>
                       <div className="mt-1 flex flex-wrap gap-1">
                         {m.roles.length ? m.roles.map((r) => (
                           <Badge key={r} variant="secondary" className="text-[10px]">{ROLE_LABELS[r]}</Badge>
