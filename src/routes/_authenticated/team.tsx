@@ -59,8 +59,18 @@ function TeamPage() {
       setName(""); setUsername(""); setPassword(""); setRole("article");
       setOpen(false);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error("Could not add member. Check the username and password and try again."),
   });
+
+  const handleAdd = () => {
+    const n = name.trim();
+    const u = username.trim();
+    if (n.length < 2) { toast.error("Please enter the member's name."); return; }
+    if (u.length < 3) { toast.error("Username must be at least 3 characters."); return; }
+    if (!/^[a-zA-Z0-9._-]+$/.test(u)) { toast.error("Username can only use letters, numbers, dots, _ or -"); return; }
+    if (password.length < 6) { toast.error("Password must be at least 6 characters."); return; }
+    createMutation.mutate();
+  };
 
   const roleMutation = useMutation({
     mutationFn: (v: { userId: string; role: AppRole }) => updateRole({ data: v }),
