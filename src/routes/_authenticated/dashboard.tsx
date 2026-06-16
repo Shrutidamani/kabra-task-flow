@@ -173,3 +173,182 @@ function Legend({ items }: { items: { name: string; value: number }[] }) {
     </div>
   );
 }
+
+const PRIORITY_TONE: Record<string, string> = {
+  high: "bg-destructive/15 text-destructive",
+  medium: "bg-accent/20 text-accent-foreground",
+  low: "bg-secondary text-secondary-foreground",
+};
+
+function StaffHome() {
+  const { profile, user } = useAuth();
+  const { data: tasks = [], isLoading } = useTasks();
+  const month = monthKey();
+  const { data: attendance = [] } = useAttendanceMonth(month);
+
+  const myTasks = useMemo(
+    () => tasks.filter((t) => t.assigned_to === user?.id),
+    [tasks, user?.id],
+  );
+
+  const active = useMemo(
+    () => myTasks.filter((t) => t.status !== "completed"),
+    [myTasks],
+  );
+
+  const todayOrOverdue = useMemo(
+    () =>
+      active
+        .filter((t) => t.due_date && daysUntil(t.due_date) <= 0)
+        .sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1)),
+    [active],
+  );
+
+  const upcoming = useMemo(
+    () =>
+      active
+        .filter((t) => t.due_date && daysUntil(t.due_date) > 0)
+        .sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1))
+        .slice(0, 5),
+    [active],
+  );
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const inMonth = (s: string | null) =>
+      s ? s.slice(0, 7) === month : false;
+    return {
+      assigned: active.length,
+      inProgress: myTasks.filter((t) => t.status === "in_progress").length,
+      completedThisMonth: myTasks.filter(
+        (t) => t.status === "completed" && inMonth(t.completed_at),
+      ).length,
+      overdue: myTasks.filter(isOverdue).length,
+    };
+  }, [active, myTasks, month]);
+
+  const myAttendance = useMemo(
+    () => attendance.filter((a) => a.user_id === user?.id),
+    [attendance, user?.id],
+  );
+
+  const attCounts = useMemo(() => {
+    return {
+      present: myAttendance.filter((a) => a.status === "present").length,
+      half_day: myAttendance.filter((a) => a.status === "half_day").length,
+      absent: myAttendance.filter((a) => a.status === "absent").length,
+    };
+  }, [myAttendance]);
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">
+          Hello{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}
+        </h1>
+        <p className="text-muted-foreground">Here's what's on your plate.</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Active Tasks" value={stats.assigned} icon={ListTodo} tone="bg-secondary text-secondary-foreground" />
+        <StatCard label="In Progress" value={stats.inProgress} icon={Clock} tone="bg-accent/20 text-accent-foreground" />
+        <StatCard label="Done This Month" value={stats.completedThisMonth} icon={CheckCircle2} tone="bg-success/15 text-success" />
+        <StatCard label="Overdue" value={stats.overdue} icon={AlertTriangle} tone="bg-destructive/15 text-destructive" />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <AlertTriangle className="size-4" /> Due Today & Overdue
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {todayOrOverdue.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              Nothing due today. Nice work! 🎉
+            </p>
+          ) : (
+            todayOrOverdue.map((t) => <TaskRow key={t.id} task={t} />)
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CalendarDays className="size-4" /> Upcoming Deadlines
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {upcoming.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              No upcoming deadlines.
+            </p>
+          ) : (
+            upcoming.map((t) => <TaskRow key={t.id} task={t} />)
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CalendarCheck className="size-4" /> My Attendance — {monthLabel(month)}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <p className="text-2xl font-bold font-display text-success">{attCounts.present}</p>
+            <p className="text-xs text-muted-foreground">{ATTENDANCE_LABELS.present}</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold font-display text-accent-foreground">{attCounts.half_day}</p>
+            <p className="text-xs text-muted-foreground">{ATTENDANCE_LABELS.half_day}</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold font-display text-destructive">{attCounts.absent}</p>
+            <p className="text-xs text-muted-foreground">{ATTENDANCE_LABELS.absent}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {isLoading && <p className="text-center text-sm text-muted-foreground">Loading…</p>}
+    </div>
+  );
+}
+
+function TaskRow({ task }: { task: Task }) {
+  const overdue = isOverdue(task);
+  const days = task.due_date ? daysUntil(task.due_date) : null;
+  const dueLabel =
+    days === null
+      ? ""
+      : days < 0
+        ? `${Math.abs(days)}d overdue`
+        : days === 0
+          ? "Due today"
+          : `In ${days}d`;
+  return (
+    <Link
+      to="/tasks"
+      className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+    >
+      <div className="min-w-0">
+        <p className="truncate font-medium">{task.title}</p>
+        {task.company && (
+          <p className="truncate text-xs text-muted-foreground">{task.company}</p>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <Badge variant="outline" className={PRIORITY_TONE[task.priority]}>
+          {PRIORITY_LABELS[task.priority]}
+        </Badge>
+        {dueLabel && (
+          <span className={`text-xs font-medium ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
+            {dueLabel}
+          </span>
+        )}
+      </div>
+    </Link>
+  );
+}
