@@ -51,6 +51,11 @@ function StatCard({
 }
 
 function Dashboard() {
+  const { canManage } = useAuth();
+  return canManage ? <AdminDashboard /> : <StaffHome />;
+}
+
+function AdminDashboard() {
   const { profile } = useAuth();
   const { data: tasks = [], isLoading } = useTasks();
   const { data: members = [] } = useMembers();
