@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import {
   ListTodo,
@@ -6,11 +6,15 @@ import {
   Clock,
   AlertTriangle,
   TrendingUp,
+  CalendarCheck,
+  CalendarDays,
 } from "lucide-react";
-import { useTasks, useMembers } from "@/lib/queries";
-import { isOverdue, STATUS_LABELS, PRIORITY_LABELS, type Task } from "@/lib/tasks";
+import { useTasks, useMembers, useAttendanceMonth } from "@/lib/queries";
+import { isOverdue, daysUntil, STATUS_LABELS, PRIORITY_LABELS, type Task } from "@/lib/tasks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
+import { ATTENDANCE_LABELS, monthKey, monthLabel } from "@/lib/payroll";
 import { BarList, ChartEmpty, DonutChart, GroupedBarList } from "@/components/SimpleCharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
