@@ -128,7 +128,7 @@ function TeamPage() {
                   </Select></div>
               </div>
               <DialogFooter>
-                <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
+                <Button onClick={handleAdd} disabled={createMutation.isPending}>
                   {createMutation.isPending && <Loader2 className="size-4 animate-spin" />} Add Member
                 </Button>
               </DialogFooter>
