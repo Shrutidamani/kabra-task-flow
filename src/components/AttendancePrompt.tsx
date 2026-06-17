@@ -13,6 +13,8 @@ import {
   type AttendanceStatus,
 } from "@/lib/payroll";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -35,12 +37,24 @@ export function AttendancePrompt({
   const qc = useQueryClient();
   const today = todayStr();
   const { data: members = [] } = useMembers();
-  const { data: monthRecords = [] } = useAttendanceMonth(monthKey());
+
+  // The date currently being marked (defaults to today, but can be changed to any past date).
+  const [selectedDate, setSelectedDate] = useState(today);
+  const selectedDateObj = useMemo(() => new Date(selectedDate), [selectedDate]);
+
+  // Records for the currently selected month (used for the dialog).
+  const { data: selectedMonthRecords = [] } = useAttendanceMonth(monthKey(selectedDateObj));
+  // Records for the current month (used for the auto-open check).
+  const { data: currentMonthRecords = [] } = useAttendanceMonth(monthKey());
 
   const staff = useMemo(() => members.filter((m) => m.id !== user?.id), [members, user?.id]);
   const todaysRecords = useMemo(
-    () => monthRecords.filter((r) => r.date === today),
-    [monthRecords, today],
+    () => currentMonthRecords.filter((r) => r.date === today),
+    [currentMonthRecords, today],
+  );
+  const selectedRecords = useMemo(
+    () => selectedMonthRecords.filter((r) => r.date === selectedDate),
+    [selectedMonthRecords, selectedDate],
   );
 
   const [internalOpen, setInternalOpen] = useState(false);
@@ -55,25 +69,28 @@ export function AttendancePrompt({
     if (!isAdmin || staff.length === 0) return;
     const dismissed = localStorage.getItem(`attendance_done_${today}`);
     const complete = staff.every((s) => todaysRecords.some((r) => r.user_id === s.id));
-    if (!dismissed && !complete) setInternalOpen(true);
+    if (!dismissed && !complete) {
+      setSelectedDate(today);
+      setInternalOpen(true);
+    }
   }, [open, isAdmin, staff, todaysRecords, today]);
 
-  // Seed marks (default present, or existing record).
+  // Seed marks (default present, or existing record) for the selected date.
   useEffect(() => {
     if (!isOpen) return;
     const seed: Record<string, AttendanceStatus> = {};
     for (const s of staff) {
-      const existing = todaysRecords.find((r) => r.user_id === s.id);
+      const existing = selectedRecords.find((r) => r.user_id === s.id);
       seed[s.id] = (existing?.status as AttendanceStatus) ?? "present";
     }
     setMarks(seed);
-  }, [isOpen, staff, todaysRecords]);
+  }, [isOpen, staff, selectedRecords]);
 
   const save = useMutation({
     mutationFn: async () => {
       const rows = staff.map((s) => ({
         user_id: s.id,
-        date: today,
+        date: selectedDate,
         status: marks[s.id] ?? "present",
         marked_by: user?.id ?? null,
       }));
@@ -83,9 +100,11 @@ export function AttendancePrompt({
       if (error) throw error;
     },
     onSuccess: () => {
-      localStorage.setItem(`attendance_done_${today}`, "1");
+      if (selectedDate === today) {
+        localStorage.setItem(`attendance_done_${today}`, "1");
+      }
       qc.invalidateQueries({ queryKey: ["attendance"] });
-      toast.success("Attendance saved for today");
+      toast.success(`Attendance saved for ${selectedDate}`);
       setOpen(false);
     },
     onError: (e: Error) => toast.error(e.message),
@@ -98,17 +117,33 @@ export function AttendancePrompt({
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CalendarCheck className="size-5" /> Today's Attendance
+            <CalendarCheck className="size-5" /> Mark Attendance
           </DialogTitle>
           <DialogDescription>
-            {new Date(today).toLocaleDateString(undefined, {
+            Choose a date and mark who is present, absent or on half day.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-1">
+          <Label htmlFor="attendance-date" className="text-xs text-muted-foreground">
+            Date
+          </Label>
+          <Input
+            id="attendance-date"
+            type="date"
+            value={selectedDate}
+            max={today}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            {new Date(selectedDate).toLocaleDateString(undefined, {
               weekday: "long",
               day: "numeric",
               month: "long",
-            })}{" "}
-            — mark who is present, absent or on half day.
-          </DialogDescription>
-        </DialogHeader>
+              year: "numeric",
+            })}
+          </p>
+        </div>
 
         {staff.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
