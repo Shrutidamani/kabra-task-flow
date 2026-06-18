@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm install -g bun && bun run build"
   publish = "dist/client"
 
 [[redirects]]
