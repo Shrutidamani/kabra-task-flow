@@ -1,8 +1,14 @@
 [build]
-  command = "npm install -g bun && bun run build"
+  command = "npm run build"
   publish = "dist/client"
+
+[functions]
+  directory = "netlify/functions"
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/.netlify/functions/server"
   status = 200
+
+[dev]
+  command = "npm run dev"
